@@ -58,7 +58,7 @@ class Chips():
         self.total = total
         self.bet = 0
     def win_bet(self):
-        self.total+=self.win_bet
+        self.total+=self.bet
     def lose_bet(self):
         self.total -= self.bet
 
@@ -74,54 +74,60 @@ def take_bet(chips):
             else:
                 break
 
-    def hit(deck,hand):
-        hand.add_card(deck.deal())
-        hand.adjust_for_ace()
+def hit(deck,hand):
+    hand.add_card(deck.deal())
+    hand.adjust_for_ace()
 
-    def hit_or_stand(deck,hand):
-        global playing
-        while True:
-            x = input('Hit or Stand? Enter h or s')
-            if x[0].lower() == 'h':
-                hit(deck,hand)
-            elif x[0].lower() == 's'
-                print('Player stands Dealer\'s Turn')
-                playing = False
-            else:
-                print 'Sorry, not understand'
-                continue
-            break
+def hit_or_stand(deck,hand):
+    global playing
+    while True:
+        x = raw_input('Hit or Stand? Enter h or s: ')
+        if x[0].lower() == 'h':
+            hit(deck,hand)
+        elif x[0].lower() == 's':
+            print('Player stands Dealer\'s Turn')
+            playing = False
+        else:
+            print 'Sorry, not understand'
+            continue
+        break
 
 def player_busts(player,dealer,chips):
     print('Bust player')
     chips.lose_bet()
 
-def player_wins():
+def player_wins(player,dealer,chips):
     print 'player wins'
     chips.win_bet()
 
-def dealer_busts():
+def dealer_busts(player,dealer,chips):
     print 'dealer busts'
     chips.win_bet()
 
-def dealer_wins():
+def dealer_wins(player,dealer,chips):
     print 'dealer wins'
     chips.lose_bet()
 
 def push(player,dealer,chips):
     print 'Tie! Push.'
 
-'''
-test_deck = Deck()
-test_deck.shuffle()
-#print(test_deck)
+def show_some(player_hand,dealer_hand):
+    print 'Dealer: '
+    print 'Dealer hidden card.'
+    for x in dealer_hand.cards[1:len(dealer_hand.cards)]:
+        print x
+    print 'Player:'
+    for x in player_hand.cards[0:len(player_hand.cards)]:
+        print x
 
-test_player = Hand()
-pulled_card = test_deck.deal()
-print pulled_card
-test_player.add_card(pulled_card)
-print test_player.value
-'''
+def show_all(player_hand,dealer_hand):
+    print 'Dealer:'
+    for x in dealer_hand.cards[0:len(dealer_hand.cards)]:
+        print x
+    print 'Player:'
+    for x in player_hand.cards[0:len(player_hand.cards)]:
+        print x
+
 
 while True:
     deck = Deck()
@@ -133,14 +139,37 @@ while True:
     dealer_hand.add_card(deck.deal())
     dealer_hand.add_card(deck.deal())
 
-    player_chips = Chips()
+    player_chips = Chips()  # self.total = 100, self.bet = 0
 
     take_bet(player_chips)
 
     show_some(player_hand,dealer_hand)
 
     while playing:
-        hit_or_stand（deck,player_hand)
+        hit_or_stand(deck,player_hand)
         show_some(player_hand,dealer_hand)
+        if player_hand.value > 21:
+            player_busts(player_hand,dealer_hand,player_chips)
+            break
 
-        
+    if player_hand.value <=21:
+        while dealer_hand.value < 17:
+            hit(deck,dealer_hand)
+        show_all(player_hand,dealer_hand)
+        if dealer_hand.value >21:
+            dealer_busts(player_hand,dealer_hand,player_chips)
+        elif dealer_hand.value >player_hand.value:
+            dealer_wins(player_hand,dealer_hand,player_chips)
+        elif dealer_hand.value < player_hand.value:
+            player_wins(player_hand,dealer_hand,player_chips)
+        else:
+            push(player_hand,dealer_hand,player_chips)
+
+    print '\n Player total chips are at: {}'.format(player_chips.total)
+    new_game = raw_input('another game?')
+    if new_game[0].lower() == 'y':
+        playing = True
+        continue
+    else:
+        print 'Thank you for playing. Exit()'
+        break
